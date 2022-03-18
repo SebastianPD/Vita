@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
     private float magnitude;
     public Vector3 spawnPoint; // where the user will spawn and respawn
 
+    public StepEngine ST;
+
     //Inventory
     Hashtable InventorySpace = new Hashtable();
     public int inventoryLimit;
@@ -67,7 +69,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.C)) 
         {
-            Sense(_rb.transform.position, SenseRadius);
+            
         }
     }
 
@@ -105,7 +107,7 @@ public class PlayerController : MonoBehaviour
             directiony = 0f;
             transform.rotation = Quaternion.Euler(0, 0, 0);
         }
-        if (Input.GetKey(KeyCode.Space) && IsSitting)
+        if (Input.GetKey(KeyCode.Z) && IsSitting)
         {
             speed = OldSpeed;
             IsSitting = false;
@@ -125,15 +127,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void Sense(Vector3 center, float radius)
+    void Inspect()
     {
        
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(center, radius);
-
-        foreach (var hitCollider in hitColliders)
-        {
-            Debug.Log(hitCollider.gameObject.tag);
-        }
+       
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -163,6 +160,7 @@ public class PlayerController : MonoBehaviour
                 InventorySpace.Add(collision.gameObject.tag, collision.gameObject);
                 currentInventory++;
                 Destroy(collision.gameObject);
+                ST.MakeModule("PlayerAction item:");
             }
 
         }
@@ -177,13 +175,14 @@ public class PlayerController : MonoBehaviour
         
         if (other.gameObject.tag == "chair") 
         {
-            if (Input.GetKey(KeyCode.X) && !IsSitting) 
+            if (Input.GetKey(KeyCode.Space) && !IsSitting) 
             {
                 OldLocation = gameObject.transform.position;
                 Vector3 ChairLocation = other.gameObject.transform.position;
                 gameObject.transform.position = ChairLocation;
                 speed = 0;
                 IsSitting = true;
+                ST.MakeModule("PlayerAction sit:");
             }
 
         }
