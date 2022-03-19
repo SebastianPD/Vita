@@ -1,6 +1,8 @@
 Vita
 ===============
-Vita is a project meant to use STEP as a way to have AI interact and be more involved in the game world.
+Vita is a project meant to use STEP as a way to have AI interact and be more involved in the game world. AI will access their own STEP module which has it owns methods that will give certain results depending on player or ai actions and the environment around them.
+
+This current version has the AI give specific dialouge depending on the players action in game.
 
 ## Table of Contents
 
