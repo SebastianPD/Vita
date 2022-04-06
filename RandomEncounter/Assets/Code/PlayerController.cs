@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     private float magnitude;
     public Vector3 spawnPoint; // where the user will spawn and respawn
 
-    public StepEngine ST;
+    //public StepEngine ST;
 
     //Inventory
     Hashtable InventorySpace = new Hashtable();
@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour
     private float directionx;
     private float directiony;
 
+    public int exposedArea = 30;
 
     // Start is called before the first frame update
     void Start()
@@ -160,7 +161,20 @@ public class PlayerController : MonoBehaviour
                 InventorySpace.Add(collision.gameObject.tag, collision.gameObject);
                 currentInventory++;
                 Destroy(collision.gameObject);
-                ST.MakeModule("PlayerAction item:");
+
+                //foreach lop to get all npcs in the are and tell them about this
+                Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea);
+
+                foreach (Collider2D item in npcArr)
+                {
+                    if (item.gameObject.tag == "NPC") 
+                    {
+                       item.gameObject.GetComponent<NPCController>().MakeModule("PlayerAction item:");
+                    }
+
+                }
+
+                //ST.MakeModule("PlayerAction item:");
             }
 
         }
@@ -182,7 +196,19 @@ public class PlayerController : MonoBehaviour
                 gameObject.transform.position = ChairLocation;
                 speed = 0;
                 IsSitting = true;
-                ST.MakeModule("PlayerAction sit:");
+
+                Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea);
+
+                foreach (Collider2D item in npcArr)
+                {
+                    if (item.gameObject.tag == "NPC")
+                    {
+                        item.gameObject.GetComponent<NPCController>().MakeModule("PlayerAction sit:");
+                    }
+
+                }
+
+                //ST.MakeModule("PlayerAction sit:");
             }
 
         }

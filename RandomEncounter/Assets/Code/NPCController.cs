@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Step;
+using Step.Interpreter;
 
 public class NPCController : MonoBehaviour
 {
     // Start is called before the first frame update
 
     public DialougeTrigger Dt;
-    public StepEngine ST;
+    //public StepEngine ST;
 
     public string[] PlayerActions = {"sit", "item"};
 
@@ -26,6 +28,10 @@ public class NPCController : MonoBehaviour
 
     private Rigidbody2D _rb;
 
+    //give player a step module
+
+    Module mod;
+
 
     void Start()
     {
@@ -34,6 +40,9 @@ public class NPCController : MonoBehaviour
         Direction = Random.Range(0, 5);
         OldDirection = Direction;
         oldspeed = speed;
+
+        //start step
+        mod = new Module("Module");
     }
 
     // Update is called once per frame
@@ -46,6 +55,8 @@ public class NPCController : MonoBehaviour
     {
         //check if the queue of sentences has changed. If they have then update
         UpdateST();
+
+        UpdateColor();
 
         //Check Movement
         timer = timer - Time.deltaTime;
@@ -99,7 +110,7 @@ public class NPCController : MonoBehaviour
 
             foreach (string item in PlayerActions)
             {
-                bool x = ST.MakeACall(item);
+                bool x = MakeACall(item);
 
                 if (x)
                 {
@@ -110,12 +121,63 @@ public class NPCController : MonoBehaviour
                     Dt.dialouge.sentences[counter] = "you have NOT " + item;
 
                 
-                 }
+             }
+
             counter++;
         }
         
     
     }
+
+    void UpdateColor()
+    {
+        int counter = 0;
+        SpriteRenderer m_SpriteRenderer = GetComponent<SpriteRenderer>();
+      
+            bool x = MakeACall("sit");
+
+            if (x)
+            { 
+                m_SpriteRenderer.color = Color.blue;
+            }
+            else
+            {
+
+                 m_SpriteRenderer.color = Color.green;
+
+                }
+
+            counter++;
+        
+
+           
+    }
+
+    //MODULE STUFF
+    public void MakeModule(string x)
+    {
+        mod.AddDefinitions(x);
+    }
+
+    public bool MakeACall(string x)
+    {
+        try
+        {
+            mod.ParseAndExecute("[PlayerAction " + x + "]");
+            //mod.CallPredicate("PlayerAction", c# object) to document objects.
+
+
+            return true;
+        }
+        catch
+        {
+
+            return false;
+        }
+
+
+    }
+
 
     private void OnTriggerStay2D(Collider2D other)
     {

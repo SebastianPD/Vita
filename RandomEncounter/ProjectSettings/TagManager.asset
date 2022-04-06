@@ -9,6 +9,7 @@ TagManager:
   - Thing
   - table
   - inside
+  - NPC
   layers:
   - Default
   - TransparentFX
