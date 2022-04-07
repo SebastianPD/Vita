@@ -6,6 +6,7 @@ using Step.Interpreter;
 
 public class NPCController : MonoBehaviour
 {
+    //TODO have NPC interact with each other
     // Start is called before the first frame update
 
     public DialougeTrigger Dt;

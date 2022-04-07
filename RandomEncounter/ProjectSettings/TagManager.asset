@@ -10,6 +10,7 @@ TagManager:
   - table
   - inside
   - NPC
+  - water
   layers:
   - Default
   - TransparentFX
