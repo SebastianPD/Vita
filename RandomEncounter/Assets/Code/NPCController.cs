@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Step;
 using Step.Interpreter;
+using System;
 
 public class NPCController : MonoBehaviour
 {
@@ -33,12 +34,12 @@ public class NPCController : MonoBehaviour
 
     Module mod;
 
-
+    public int exposedArea = 1;
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
         OldTimer = timer;
-        Direction = Random.Range(0, 5);
+        Direction = UnityEngine.Random.Range(0, 5);
         OldDirection = Direction;
         oldspeed = speed;
 
@@ -64,16 +65,43 @@ public class NPCController : MonoBehaviour
         if (timer < 0)
         {
             OldDirection = Direction;
-            Direction = Random.Range(0, 5);
+            Direction = UnityEngine.Random.Range(0, 5);
 
             while (Direction == OldDirection)
             {
-                Direction = Random.Range(0, 5);
+                Direction = UnityEngine.Random.Range(0, 5);
             }
             timer = OldTimer;
+
+
         }
         movement(Direction);
+        Action();
+    }
 
+    void Action() 
+    {
+
+        Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea, LayerMask.GetMask("Default"));
+
+
+        foreach (Collider2D item in npcArr)
+        {
+            if (item.gameObject.tag == "NPC")
+            {
+                if (item.gameObject.transform.position == transform.position) 
+                {
+                    continue;
+                }
+                Debug.Log("Theres a npc near me");
+            }
+
+            if (item.gameObject.tag == "Player")
+            {
+                Debug.Log("Theres a player near me");
+            }
+
+        }
     }
 
     void movement(int x)
