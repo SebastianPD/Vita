@@ -18,8 +18,10 @@ public class NPCController : MonoBehaviour
     //AI Movement
 
     public float timer;
+    public float activityTimer;
 
     private float OldTimer;
+    public float OldactivityTimer;
 
     private int Direction;
 
@@ -34,11 +36,15 @@ public class NPCController : MonoBehaviour
 
     Module mod;
 
+    public int activity;
+
     public int exposedArea = 1;
     void Start()
     {
+        activity = 0;
         _rb = GetComponent<Rigidbody2D>();
         OldTimer = timer;
+        OldactivityTimer = activityTimer;
         Direction = UnityEngine.Random.Range(0, 5);
         OldDirection = Direction;
         oldspeed = speed;
@@ -59,7 +65,75 @@ public class NPCController : MonoBehaviour
         UpdateST();
 
         UpdateColor();
+        
+        Action();
+        Sense();
+    }
 
+    void Action()
+    {
+        activityTimer = activityTimer - Time.deltaTime;
+        if (activityTimer < 0)
+        {
+            
+            activity = UnityEngine.Random.Range(0, 5);
+
+   
+            
+            activityTimer = OldactivityTimer;
+
+            
+        }
+
+        switch (activity)
+        {
+            case 1:
+                //insert code here
+                Debug.Log("1");
+                break;
+            case 2:
+                //insert code here
+                Debug.Log("2");
+                break;
+            case 3:
+                //insert code here
+                Debug.Log("3");
+                break;
+            default:
+                movement(Direction);
+                break;
+        }
+
+    }
+
+    void Sense() 
+    {
+
+        Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea, LayerMask.GetMask("Default"));
+
+
+        foreach (Collider2D item in npcArr)
+        {
+            if (item.gameObject.tag == "NPC")
+            {
+                if (item.gameObject.transform.position == transform.position) 
+                {
+                    continue;
+                }
+                //Change Activity
+               // Debug.Log("Theres a npc near me");
+            }
+
+            if (item.gameObject.tag == "Player")
+            {
+              //  Debug.Log("Theres a player near me");
+            }
+
+        }
+    }
+
+    void movement(int x)
+    {
         //Check Movement
         timer = timer - Time.deltaTime;
         if (timer < 0)
@@ -75,37 +149,9 @@ public class NPCController : MonoBehaviour
 
 
         }
-        movement(Direction);
-        Action();
-    }
-
-    void Action() 
-    {
-
-        Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea, LayerMask.GetMask("Default"));
 
 
-        foreach (Collider2D item in npcArr)
-        {
-            if (item.gameObject.tag == "NPC")
-            {
-                if (item.gameObject.transform.position == transform.position) 
-                {
-                    continue;
-                }
-                Debug.Log("Theres a npc near me");
-            }
 
-            if (item.gameObject.tag == "Player")
-            {
-                Debug.Log("Theres a player near me");
-            }
-
-        }
-    }
-
-    void movement(int x)
-    {
         if (Direction == 0)
         {
             _rb.velocity = new Vector2(0, 0);

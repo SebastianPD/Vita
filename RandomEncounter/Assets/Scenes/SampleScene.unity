@@ -956,7 +956,10 @@ MonoBehaviour:
   - sit
   - item
   timer: 4
+  activityTimer: 10
+  OldactivityTimer: 0
   speed: 2
+  activity: 0
   exposedArea: 5
 --- !u!114 &237453461
 MonoBehaviour:
