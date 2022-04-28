@@ -11,6 +11,7 @@ TagManager:
   - inside
   - NPC
   - water
+  - Thing2
   layers:
   - Default
   - TransparentFX

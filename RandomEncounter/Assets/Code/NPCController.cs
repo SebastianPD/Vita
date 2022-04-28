@@ -32,7 +32,7 @@ public class NPCController : MonoBehaviour
 
     private Rigidbody2D _rb;
 
-    //give player a step module
+    //TODO string array with varous feelings? give different personalities. Choose what actions to have?
 
     Module mod;
 
@@ -89,15 +89,15 @@ public class NPCController : MonoBehaviour
         {
             case 1:
                 //insert code here
-                Debug.Log("1");
+               // Debug.Log("1");
                 break;
             case 2:
                 //insert code here
-                Debug.Log("2");
+               // Debug.Log("2");
                 break;
             case 3:
                 //insert code here
-                Debug.Log("3");
+                //Debug.Log("3");
                 break;
             default:
                 movement(Direction);
@@ -190,6 +190,7 @@ public class NPCController : MonoBehaviour
                 if (x)
                 {
                      Dt.dialouge.sentences[counter] = "you have " + item;
+                
                 }
                 else 
                 {

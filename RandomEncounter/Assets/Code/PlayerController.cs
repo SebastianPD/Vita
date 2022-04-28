@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
@@ -16,13 +17,20 @@ public class PlayerController : MonoBehaviour
     Hashtable InventorySpace = new Hashtable();
     public int inventoryLimit;
     public int currentInventory;
+    public List<string> inventoryList = new List<string>();
+    int ItemListPointer = 0;
+    string itemString = "";
 
     //Stats
     int Atk;
     int Def;
     int SAtk;
     int SDef;
-    int HP;
+
+    public int HP;
+    public TMP_Text healthText;
+    public TMP_Text InventoryText;
+
     public int SenseRadius;
 
     //Chair interaction
@@ -50,6 +58,8 @@ public class PlayerController : MonoBehaviour
         //Set up spawnpoint
         spawnPoint = transform.position;
         source = GetComponent<AudioSource>();
+        healthText.text = "Health: " + HP;
+        InventoryText.text = "Inventory: empty";
     }
 
     // Update is called once per frame
@@ -64,14 +74,38 @@ public class PlayerController : MonoBehaviour
         Movement();
         Inventory();
         Abilities();
+        UpdateText();
     }
 
+    void UpdateText() 
+    {
+        healthText.text = "Health: " + HP;
+        InventoryText.text = "Inventory: " + itemString + InventorySpace[itemString];
+    }
     void Abilities() 
     {
         if (Input.GetKey(KeyCode.C)) 
         {
-            
+            inventorySwitcher();
         }
+    }
+
+    void inventorySwitcher() 
+    {
+        if (inventoryList.Count == 0) 
+        {
+            itemString = "";
+            return;
+        }
+
+        ItemListPointer++;
+        ItemListPointer = ItemListPointer % inventoryList.Count;
+        itemString = inventoryList[ItemListPointer];
+    }
+
+    void inventoryupdate() 
+    {
+        ItemListPointer = 0;
     }
 
     void Movement()
@@ -120,11 +154,27 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Z) && currentInventory > 0)
         {
+            try
+            {
+                GameObject prefab = Resources.Load("prefabs/" + itemString) as GameObject;
+                Instantiate(prefab, new Vector3(transform.position.x + directionx, transform.position.y + directiony, direction), Quaternion.identity);
+                InventorySpace[itemString] = (int)InventorySpace[itemString] - 1;
+                if ((int)InventorySpace[itemString] == 0)
+                {
+                    InventorySpace.Remove(itemString);
+                    inventoryList.Remove(itemString);
+                }
+                //InventorySpace.Clear();
+                currentInventory--;
+            }
+            catch 
+            {
+
+                return;
+            }
             
-            GameObject prefab = Resources.Load("prefabs/Thing") as GameObject;
-            Instantiate(prefab, new Vector3(transform.position.x + directionx, transform.position.y + directiony, direction), Quaternion.identity);
-            InventorySpace.Clear();
-            currentInventory--;
+           
+            
         }
     }
 
@@ -154,11 +204,20 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionStay2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Thing" && Input.GetKey(KeyCode.X))
+        if ((collision.gameObject.tag == "Thing" || collision.gameObject.tag == "Thing2") && Input.GetKey(KeyCode.X))
         {
             if (InventorySpace.Count < inventoryLimit)
             {
-                InventorySpace.Add(collision.gameObject.tag, collision.gameObject);
+                if (InventorySpace.ContainsKey(collision.gameObject.tag))
+                {
+                    InventorySpace[collision.gameObject.tag] = collision.gameObject.tag + 1;
+                }
+                else 
+                {
+                    InventorySpace.Add(collision.gameObject.tag, 1);
+                    inventoryList.Add(collision.gameObject.tag);
+                }
+                inventoryupdate();
                 currentInventory++;
                 Destroy(collision.gameObject);
 
