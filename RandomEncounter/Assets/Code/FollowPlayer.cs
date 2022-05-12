@@ -8,6 +8,8 @@ public class FollowPlayer : MonoBehaviour
     public PlayerController player;
     public bool controlPlayer;
     public bool createPlayer;
+    public bool createTable;
+    public bool createChair;
     public bool createNPC;
     public float offset;
     public float moveSpeed;
@@ -33,6 +35,20 @@ public class FollowPlayer : MonoBehaviour
                 Debug.Log("Create");
                 Vector3 WorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 GameObject prefab = Resources.Load("prefabs/NPC") as GameObject;
+                Instantiate(prefab, new Vector3(WorldPosition.x, WorldPosition.y, 1), Quaternion.identity);
+            }
+            else if (createChair) 
+            {
+                Debug.Log("Create");
+                Vector3 WorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                GameObject prefab = Resources.Load("prefabs/chair") as GameObject;
+                Instantiate(prefab, new Vector3(WorldPosition.x, WorldPosition.y, 1), Quaternion.identity);
+            }
+            else if (createTable) 
+            {
+                Debug.Log("Create");
+                Vector3 WorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                GameObject prefab = Resources.Load("prefabs/table") as GameObject;
                 Instantiate(prefab, new Vector3(WorldPosition.x, WorldPosition.y, 1), Quaternion.identity);
             }
         }
@@ -69,5 +85,15 @@ public class FollowPlayer : MonoBehaviour
     public void EnableNPCCreation() 
     {
         createNPC = !createNPC;
+    }
+
+    public void EnableChairCreation() 
+    {
+        createChair = !createChair;
+    }
+
+    public void EnableTableCreation()
+    {
+        createTable = !createTable;
     }
 }

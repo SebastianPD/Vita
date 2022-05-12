@@ -10,6 +10,9 @@ public class NPCController : MonoBehaviour
     //TODO have NPC interact with each other
     // Start is called before the first frame update
 
+
+
+
     public DialougeTrigger Dt;
     //public StepEngine ST;
 
@@ -31,6 +34,17 @@ public class NPCController : MonoBehaviour
     float oldspeed;
 
     private Rigidbody2D _rb;
+
+    public double sights;
+
+
+    //Inventory
+    public List<GameObject> children = new List<GameObject>();
+
+    public int inventoryLimit;
+    public int currentInventory;
+    public List<string> inventoryList = new List<string>();
+    int ItemListPointer = 0;
 
     //TODO string array with varous feelings? give different personalities. Choose what actions to have?
 
@@ -63,11 +77,12 @@ public class NPCController : MonoBehaviour
     {
         //check if the queue of sentences has changed. If they have then update
         UpdateST();
-
-        UpdateColor();
         
+        UpdateColor();
+        //checkArea();
         Action();
         Sense();
+        movement();
     }
 
     void Action()
@@ -82,26 +97,89 @@ public class NPCController : MonoBehaviour
             
             activityTimer = OldactivityTimer;
 
-            
+            switch (activity)
+            {
+                case 1:
+                    Debug.Log("1");
+                    checkArea();
+
+                    break;
+                case 2:
+                    Debug.Log("2");
+                    Inventory();
+                    //insert code here
+
+                    break;
+                case 3:
+                    Debug.Log("3");
+                    //insert code here
+                    //
+                    break;
+                default:
+                    Debug.Log("default");
+                    break;
+            }
+
+
         }
 
-        switch (activity)
+       
+
+    }
+
+    void checkArea() 
+    {
+        //If there is an item walk towards it.
+        Vector2 Location = new Vector2(transform.position.x, transform.position.y);
+        Collider2D[] col = Physics2D.OverlapCircleAll(transform.position, 5);
+
+        Collider2D x = col[0];
+
+        foreach (Collider2D item in col)
         {
-            case 1:
-                //insert code here
-               // Debug.Log("1");
-                break;
-            case 2:
-                //insert code here
-               // Debug.Log("2");
-                break;
-            case 3:
-                //insert code here
-                //Debug.Log("3");
-                break;
-            default:
-                movement(Direction);
-                break;
+            if (item.tag == "Thing")
+            {
+                x = item;
+            }
+        }
+
+        
+
+        Debug.Log(Location.x);
+
+        if (x.tag == "Thing")
+        {
+            Vector3 ItemLoc = x.transform.position;
+          
+            if (ItemLoc.x > Location.x - sights && ItemLoc.x < Location.x + sights && ItemLoc.y > Location.y)
+            {
+                //Debug.Log("item above");
+               // timer = OldTimer;
+                Direction = 1;
+               
+            }
+
+            if (ItemLoc.x > Location.x - sights && ItemLoc.x < Location.x + sights && ItemLoc.y < Location.y)
+            {
+              //  Debug.Log("item below");
+              //  timer = OldTimer;
+                Direction = 2;
+            }
+
+            if (ItemLoc.y < Location.y - sights && ItemLoc.y > Location.y + sights && ItemLoc.x < Location.x)
+            {
+            //    Debug.Log("item left");
+               // timer = OldTimer;
+                Direction = 3;
+            }
+
+            if (ItemLoc.y < Location.y - sights && ItemLoc.y > Location.y + sights && ItemLoc.x > Location.x)
+            {
+              //  Debug.Log("item right");
+              //  timer = OldTimer;
+                Direction = 4;
+            }
+
         }
 
     }
@@ -132,11 +210,51 @@ public class NPCController : MonoBehaviour
         }
     }
 
-    void movement(int x)
+
+    void EmergencyChange()
+    {
+
+        OldDirection = Direction;
+        Direction = UnityEngine.Random.Range(0, 5);
+
+        while (Direction == OldDirection)
+        {
+            Direction = UnityEngine.Random.Range(0, 5);
+        }
+
+        if (Direction == 0)
+        {
+            _rb.velocity = new Vector2(0, 0);
+
+        }
+
+        if (Direction == 1)
+        {
+            _rb.velocity = new Vector2(0, speed);
+
+        }
+        if (Direction == 2)
+        {
+            _rb.velocity = new Vector2(0, -speed);
+
+        }
+        if (Direction == 3)
+        {
+            _rb.velocity = new Vector2(-speed, 0);
+
+        }
+        if (Direction == 4)
+        {
+            _rb.velocity = new Vector2(speed, 0);
+        }
+    }
+
+
+    void movement()
     {
         //Check Movement
         timer = timer - Time.deltaTime;
-        if (timer < 0)
+        if (timer <= 0)
         {
             OldDirection = Direction;
             Direction = UnityEngine.Random.Range(0, 5);
@@ -224,8 +342,6 @@ public class NPCController : MonoBehaviour
                 }
 
             counter++;
-        
-
            
     }
 
@@ -233,6 +349,7 @@ public class NPCController : MonoBehaviour
     public void MakeModule(string x)
     {
         mod.AddDefinitions(x);
+       
     }
 
     public bool MakeACall(string x)
@@ -277,5 +394,105 @@ public class NPCController : MonoBehaviour
             speed = oldspeed;
 
         }
+    }
+
+    void Inventory()
+    {
+        if (currentInventory > 0)
+        {
+
+            try
+            {
+                SpriteRenderer sp = children[ItemListPointer].GetComponent<SpriteRenderer>();
+                BoxCollider2D box = children[ItemListPointer].GetComponent<BoxCollider2D>();
+                sp.enabled = true;
+                box.enabled = true;
+                children[ItemListPointer].transform.parent = null;
+                children.Remove(children[ItemListPointer]);
+                currentInventory--;
+                inventoryupdate();
+            }
+            catch
+            {
+
+                return;
+            }
+
+
+        }
+    }
+
+
+
+    void inventoryupdate()
+    {
+        children.Clear();
+
+        Transform[] ts = gameObject.GetComponentsInChildren<Transform>();
+
+        if (ts == null)
+        {
+            return;
+        }
+
+        foreach (Transform child in transform)
+        {
+            children.Add(child.gameObject);
+        }
+
+        if (children.Count == 0)
+        {
+            ItemListPointer = 0;
+            return;
+        }
+        else
+        {
+            ItemListPointer++;
+            ItemListPointer = ItemListPointer % children.Count;
+        }
+
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if ((collision.gameObject.tag == "Thing" || collision.gameObject.tag == "Thing2"))
+        {
+            if (inventoryList.Count < inventoryLimit)
+            {
+
+                BoxCollider2D box = collision.gameObject.GetComponent<BoxCollider2D>();
+                box.enabled = false;
+
+                SpriteRenderer SR = collision.gameObject.GetComponent<SpriteRenderer>();
+                SR.enabled = false;
+
+                collision.gameObject.transform.parent = this.gameObject.transform;
+                currentInventory++;
+                inventoryupdate();
+
+                MakeModule("Picked up:");
+
+                //foreach lop to get all npcs in the are and tell them about this
+                Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea);
+
+                foreach (Collider2D item in npcArr)
+                {
+                    if (item.gameObject.tag == "NPC")
+                    {
+                        item.gameObject.GetComponent<NPCController>().MakeModule("PlayerAction item:");
+                    }
+
+                }
+
+                //ST.MakeModule("PlayerAction item:");
+            }
+
+        }
+        // EmergencyChange();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+       // EmergencyChange();
     }
 }

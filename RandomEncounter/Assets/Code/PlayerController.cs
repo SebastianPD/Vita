@@ -14,18 +14,15 @@ public class PlayerController : MonoBehaviour
     //public StepEngine ST;
 
     //Inventory
-    Hashtable InventorySpace = new Hashtable();
+    public List<GameObject> children = new List<GameObject>();
+
     public int inventoryLimit;
     public int currentInventory;
     public List<string> inventoryList = new List<string>();
     int ItemListPointer = 0;
-    string itemString = "";
 
-    //Stats
-    int Atk;
-    int Def;
-    int SAtk;
-    int SDef;
+
+    string itemString = "";
 
     public int HP;
     public TMP_Text healthText;
@@ -65,26 +62,27 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        Abilities();
+        Inventory();
     }
 
 
     void FixedUpdate()
     {
         Movement();
-        Inventory();
-        Abilities();
+       
+
         UpdateText();
     }
 
     void UpdateText() 
     {
         healthText.text = "Health: " + HP;
-        InventoryText.text = "Inventory: " + itemString + InventorySpace[itemString];
+        InventoryText.text = "Inventory: " + itemString;
     }
     void Abilities() 
     {
-        if (Input.GetKey(KeyCode.C)) 
+        if (Input.GetKeyUp(KeyCode.C)) 
         {
             inventorySwitcher();
         }
@@ -92,20 +90,47 @@ public class PlayerController : MonoBehaviour
 
     void inventorySwitcher() 
     {
-        if (inventoryList.Count == 0) 
+        if (children.Count == 0) 
         {
+            ItemListPointer = 0;
             itemString = "";
             return;
         }
 
         ItemListPointer++;
-        ItemListPointer = ItemListPointer % inventoryList.Count;
-        itemString = inventoryList[ItemListPointer];
+        ItemListPointer = ItemListPointer % children.Count;
+        itemString = children[ItemListPointer].gameObject.tag;
     }
 
     void inventoryupdate() 
     {
-        ItemListPointer = 0;
+        children.Clear();
+
+        Transform[] ts = gameObject.GetComponentsInChildren<Transform>();
+
+        if (ts == null) 
+        {
+            return;
+        }
+
+        foreach (Transform child in transform)
+        {
+            children.Add(child.gameObject);
+        }
+
+        if (children.Count == 0)
+        {
+            ItemListPointer = 0;
+            itemString = "";
+            return;
+        }
+        else 
+        {
+            ItemListPointer++;
+            ItemListPointer = ItemListPointer % children.Count;
+            itemString = children[ItemListPointer].gameObject.tag;
+        }
+
     }
 
     void Movement()
@@ -152,27 +177,25 @@ public class PlayerController : MonoBehaviour
 
     void Inventory() 
     {
-        if (Input.GetKey(KeyCode.Z) && currentInventory > 0)
+        if (Input.GetKeyDown(KeyCode.Z) && currentInventory > 0)
         {
+
             try
             {
-                GameObject prefab = Resources.Load("prefabs/" + itemString) as GameObject;
-                Instantiate(prefab, new Vector3(transform.position.x + directionx, transform.position.y + directiony, direction), Quaternion.identity);
-                InventorySpace[itemString] = (int)InventorySpace[itemString] - 1;
-                if ((int)InventorySpace[itemString] == 0)
-                {
-                    InventorySpace.Remove(itemString);
-                    inventoryList.Remove(itemString);
-                }
-                //InventorySpace.Clear();
+                SpriteRenderer sp = children[ItemListPointer].GetComponent<SpriteRenderer>();
+                BoxCollider2D box = children[ItemListPointer].GetComponent<BoxCollider2D>();
+                sp.enabled = true;
+                box.enabled = true;
+                children[ItemListPointer].transform.parent = null;
+                children.Remove(children[ItemListPointer]);
                 currentInventory--;
+                inventoryupdate();
             }
-            catch 
+            catch
             {
 
                 return;
             }
-            
            
             
         }
@@ -196,9 +219,7 @@ public class PlayerController : MonoBehaviour
             SceneManager.LoadScene(nextSceneIndex);
 
             source.PlayOneShot(sound, 1);
-        }
-
-        
+        }    
 
     }
 
@@ -206,20 +227,19 @@ public class PlayerController : MonoBehaviour
     {
         if ((collision.gameObject.tag == "Thing" || collision.gameObject.tag == "Thing2") && Input.GetKey(KeyCode.X))
         {
-            if (InventorySpace.Count < inventoryLimit)
+            if (inventoryList.Count < inventoryLimit)
             {
-                if (InventorySpace.ContainsKey(collision.gameObject.tag))
-                {
-                    InventorySpace[collision.gameObject.tag] = collision.gameObject.tag + 1;
-                }
-                else 
-                {
-                    InventorySpace.Add(collision.gameObject.tag, 1);
-                    inventoryList.Add(collision.gameObject.tag);
-                }
-                inventoryupdate();
+
+                BoxCollider2D box = collision.gameObject.GetComponent<BoxCollider2D>();
+                box.enabled = false;
+
+                SpriteRenderer SR = collision.gameObject.GetComponent<SpriteRenderer>();
+                SR.enabled = false;
+
+                collision.gameObject.transform.parent = this.gameObject.transform;
                 currentInventory++;
-                Destroy(collision.gameObject);
+                inventoryupdate();
+
 
                 //foreach lop to get all npcs in the are and tell them about this
                 Collider2D[] npcArr = Physics2D.OverlapCircleAll(transform.position, exposedArea);
@@ -271,9 +291,5 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-
-       
-
-            //if we hit a dummy item then we copy dummy item in hash table and then we can make an instance of it. Keep it in hash table then remove from hash table
         }
 }
