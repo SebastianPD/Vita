@@ -4,6 +4,7 @@ using UnityEngine;
 using Step;
 using Step.Interpreter;
 using System;
+using Pathfinding;
 
 public class NPCController : MonoBehaviour
 {
@@ -48,6 +49,20 @@ public class NPCController : MonoBehaviour
 
     //TODO string array with varous feelings? give different personalities. Choose what actions to have?
 
+    //A* pathfinding
+    public Transform target;
+    //use speed variable listed above
+    public float NextWaypoint; //how close it needs to be to a way point before moving
+
+    Path path;
+    int currentWaypoint = 0;
+    bool reachedEndofPath = false;
+    Seeker seeker;
+    //use rigidbody _rb listed above
+
+  
+    
+
     Module mod;
 
     public int activity;
@@ -55,8 +70,10 @@ public class NPCController : MonoBehaviour
     public int exposedArea = 1;
     void Start()
     {
+        InvokeRepeating("UpdatePath", 0f, .5f); 
         activity = 0;
         _rb = GetComponent<Rigidbody2D>();
+        seeker = GetComponent<Seeker>();
         OldTimer = timer;
         OldactivityTimer = activityTimer;
         Direction = UnityEngine.Random.Range(0, 5);
@@ -65,6 +82,51 @@ public class NPCController : MonoBehaviour
 
         //start step
         mod = new Module("Module");
+    }
+
+    void OnPathComplete(Path p) 
+    {
+        if (!p.error) 
+        {
+            path = p;
+            currentWaypoint = 0;
+        }
+    }
+
+    bool ReachEndOfPath() 
+    {
+        if (currentWaypoint >= path.vectorPath.Count)
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    void UpdatePath() 
+    {
+        if (seeker.IsDone()) //check if done with old path
+        {
+            seeker.StartPath(_rb.position, target.position, OnPathComplete); //function to use to start a path
+        }
+
+       
+    }
+
+    //make functions that will maipulate the direction of said npc
+    //check distance to see if we can go to next waypoint
+
+    // Invokereapeating at a few seconds
+
+    bool AvaliablePath() 
+    {
+        if (path == null) 
+        {
+            return false;
+        }
+
+        return true;
     }
 
     // Update is called once per frame
