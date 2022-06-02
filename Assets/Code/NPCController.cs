@@ -164,7 +164,8 @@ public class NPCController : MonoBehaviour
             if (hit.collider != null)
             {
                 Debug.Log("click");
-                if (hit.transform.tag != "NPC")
+                Debug.Log(hit.transform.tag);
+                if (hit.transform.tag == "NPC")
                 {
                  
                         Dt.TriggerDialouge();
